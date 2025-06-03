@@ -1,23 +1,22 @@
 # NewRepo
 
-This repository contains a .NET application.
+This repository contains a .NET 8 Web API.
 
-To install the .NET SDK required to build the project, run the setup script:
+## Prerequisites
+
+- [.NET SDK 8.0](https://dotnet.microsoft.com/)
+
+Running tests also requires the .NET 8 SDK. After installing the SDK, you can verify
+the setup by executing:
+
+```bash
+dotnet test
+```
+
+You can run `setup.sh` to install the required SDK and add the Microsoft
+package repository:
 
 ```bash
 ./setup.sh
 ```
 
-## Configuration
-
-The application reads Dhan API settings from configuration. The default `appsettings.json` file contains placeholder values. Provide real credentials either via environment variables or an `appsettings.Development.json` file which is not committed to source control.
-
-Environment variable names follow the ASP.NET Core convention using `__` for nested settings. For example:
-
-```bash
-export DhanApiSettings__AccessToken="<your token>"
-export DhanApiSettings__ClientId="<your client id>"
-export DhanApiSettings__TradingViewWebhookPassphrase="<passphrase>"
-```
-
-Alternatively, create an `appsettings.Development.json` next to `appsettings.json` with your secrets. This file is loaded automatically when running in the `Development` environment.
