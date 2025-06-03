@@ -14,6 +14,41 @@ namespace DhanAlgoTrading.Services
         private ClientWebSocket? _clientWebSocket;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
+        /// <summary>
+        /// Event raised whenever an order update is received from the WebSocket.
+        /// </summary>
+        public event EventHandler<OrderUpdateDataDto>? OrderUpdateReceived;
+
+        private void PublishOrderUpdate(OrderUpdateDataDto data)
+        {
+            OrderUpdateReceived?.Invoke(this, data);
+        }
+
+        internal void ProcessMessage(string receivedJson)
+        {
+            var orderUpdateMsg = JsonSerializer.Deserialize<WebSocketOrderUpdateMessageDto>(receivedJson, _jsonSerializerOptions);
+            if (orderUpdateMsg?.Data != null && "order_alert".Equals(orderUpdateMsg.Type, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation(
+                    "LiveOrderUpdateService: Parsed Order Update for OrderNo: {OrderNo}, DhanStatus: {DhanStatus}, Symbol: {Symbol}, Txn: {TxnType}, Qty: {Qty}, Price: {Price}, TradedQty: {TradedQty}, AvgPrice: {AvgPrice}",
+                    orderUpdateMsg.Data.OrderNo,
+                    orderUpdateMsg.Data.Status,
+                    orderUpdateMsg.Data.Symbol,
+                    orderUpdateMsg.Data.TxnType,
+                    orderUpdateMsg.Data.Quantity,
+                    orderUpdateMsg.Data.Price,
+                    orderUpdateMsg.Data.TradedQty,
+                    orderUpdateMsg.Data.AvgTradedPrice
+                );
+
+                PublishOrderUpdate(orderUpdateMsg.Data);
+            }
+            else
+            {
+                _logger.LogWarning("LiveOrderUpdateService: Received WebSocket message is not a recognized order_alert or data is null. Type: {Type}", orderUpdateMsg?.Type);
+            }
+        }
+
         public LiveOrderUpdateService(
             ILogger<LiveOrderUpdateService> logger,
             IOptions<DhanApiSettings> apiSettingsOptions)
@@ -190,32 +225,7 @@ namespace DhanAlgoTrading.Services
 
                         try
                         {
-                            var orderUpdateMsg = JsonSerializer.Deserialize<WebSocketOrderUpdateMessageDto>(receivedJson, _jsonSerializerOptions);
-                            if (orderUpdateMsg?.Data != null && "order_alert".Equals(orderUpdateMsg.Type, StringComparison.OrdinalIgnoreCase))
-                            {
-                                _logger.LogInformation("LiveOrderUpdateService: Parsed Order Update for OrderNo: {OrderNo}, DhanStatus: {DhanStatus}, Symbol: {Symbol}, Txn: {TxnType}, Qty: {Qty}, Price: {Price}, TradedQty: {TradedQty}, AvgPrice: {AvgPrice}",
-                                    orderUpdateMsg.Data.OrderNo,
-                                    orderUpdateMsg.Data.Status,
-                                    orderUpdateMsg.Data.Symbol,
-                                    orderUpdateMsg.Data.TxnType,
-                                    orderUpdateMsg.Data.Quantity,
-                                    orderUpdateMsg.Data.Price,
-                                    orderUpdateMsg.Data.TradedQty,
-                                    orderUpdateMsg.Data.AvgTradedPrice
-                                    );
-
-                                // TODO: Implement your logic to handle this orderUpdateMsg.Data
-                                // Examples:
-                                // 1. Raise a C# event with orderUpdateMsg.Data.
-                                // 2. Send it to a MediatR handler.
-                                // 3. Update an in-memory cache or database.
-                                // 4. If using SignalR, push this to connected clients.
-                                //    Example: await _hubContext.Clients.All.SendAsync("ReceiveOrderUpdate", orderUpdateMsg.Data);
-                            }
-                            else
-                            {
-                                _logger.LogWarning("LiveOrderUpdateService: Received WebSocket message is not a recognized order_alert or data is null. Type: {Type}", orderUpdateMsg?.Type);
-                            }
+                            ProcessMessage(receivedJson);
                         }
                         catch (JsonException jsonEx)
                         {
