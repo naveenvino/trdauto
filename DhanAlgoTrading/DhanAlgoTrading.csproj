@@ -12,7 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo(&quot;DhanAlgoTrading.Tests&quot;)" />
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>DhanAlgoTrading.Tests</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
  
 </Project>
