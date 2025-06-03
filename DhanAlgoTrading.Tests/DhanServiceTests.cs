@@ -84,7 +84,7 @@ namespace DhanAlgoTrading.Tests
 
             await service.GetUserProfileAsync();
 
-            Assert.Equal("https://api.test/user/status", handler.CapturedRequest?.RequestUri?.ToString());
+            Assert.Equal("https://api.test/profile", handler.CapturedRequest?.RequestUri?.ToString());
         }
     }
 }

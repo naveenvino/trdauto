@@ -58,11 +58,11 @@ namespace DhanAlgoTrading.Api.Services
         {
             _logger.LogInformation("GetUserProfileAsync called.");
 
-            // **ASSUMPTION**: Endpoint for User Profile Status. Replace with actual endpoint if known.
-            // The PDF mentions a "User Profile API" [cite: 266] but doesn't specify the exact GET endpoint.
-            // This is a hypothetical endpoint.
-            // Build the request relative to the configured BaseAddress
-            var requestUri = "/user/status"; // OR WHATEVER THE ACTUAL ENDPOINT IS
+            // Endpoint for retrieving the logged in user's profile details.
+            // According to DhanHQ API documentation the profile information is
+            // available via GET /profile. The BaseAddress is configured from
+            // settings so we only provide the relative path here.
+            var requestUri = "/profile";
 
             try
             {
