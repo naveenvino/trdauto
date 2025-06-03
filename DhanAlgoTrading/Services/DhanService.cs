@@ -55,24 +55,29 @@ namespace DhanAlgoTrading.Api.Services
         }
 
         // Placeholder for GetUserProfileAsync - implement as per consolidated document
-        public async Task<string?> GetUserProfileAsync(string accessToken, string dhanClientId)
+        public async Task<string?> GetUserProfileAsync()
         {
-            _logger.LogInformation("GetUserProfileAsync called for DhanClientId: {DhanClientId}", dhanClientId);
+            _logger.LogInformation("GetUserProfileAsync called.");
 
             // **ASSUMPTION**: Endpoint for User Profile Status. Replace with actual endpoint if known.
             // The PDF mentions a "User Profile API" [cite: 266] but doesn't specify the exact GET endpoint.
             // This is a hypothetical endpoint.
-            var requestUri = $"{DhanApiBaseUrl}user/status"; // OR WHATEVER THE ACTUAL ENDPOINT IS
+            var requestUri = $"{_apiSettings.BaseUrl}user/status"; // OR WHATEVER THE ACTUAL ENDPOINT IS
 
             try
             {
                 using (var requestMessage = new HttpRequestMessage(HttpMethod.Get, requestUri))
                 {
                     // Set necessary headers, common in DhanHQ APIs [cite: 56, 60, 148, 150, 166]
-                    requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken); // Or just "access-token" header if that's the scheme
-                    requestMessage.Headers.Add("access-token", accessToken); // Common pattern in the PDF
-                                                                             // Some Dhan APIs also require 'client-id' in header or body. Adjust as per actual API spec.
-                                                                             // requestMessage.Headers.Add("client-id", dhanClientId);
+                    if (!string.IsNullOrWhiteSpace(_apiSettings.AccessToken))
+                    {
+                        requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiSettings.AccessToken);
+                        requestMessage.Headers.TryAddWithoutValidation("access-token", _apiSettings.AccessToken);
+                    }
+                    if (!string.IsNullOrWhiteSpace(_apiSettings.ClientId))
+                    {
+                        requestMessage.Headers.TryAddWithoutValidation("client-id", _apiSettings.ClientId);
+                    }
 
                     _logger.LogInformation("Sending request to {RequestUri}", requestUri);
                     HttpResponseMessage response = await _httpClient.SendAsync(requestMessage);
@@ -117,17 +122,17 @@ namespace DhanAlgoTrading.Api.Services
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "HTTP request failed while getting user profile status for DhanClientId: {DhanClientId}", dhanClientId);
+                _logger.LogError(ex, "HTTP request failed while getting user profile status");
                 return "Network error while fetching profile.";
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex, "JSON deserialization failed while processing user profile status for DhanClientId: {DhanClientId}", dhanClientId);
+                _logger.LogError(ex, "JSON deserialization failed while processing user profile status");
                 return "Error parsing profile data from server.";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An unexpected error occurred while getting user profile status for DhanClientId: {DhanClientId}", dhanClientId);
+                _logger.LogError(ex, "An unexpected error occurred while getting user profile status");
                 return "An unexpected error occurred.";
             }
         }
