@@ -1,10 +1,9 @@
-using DhanAlgoTrading.Api.Models.DhanApi.WebSocket;
 using DhanAlgoTrading.Models.Configuration;
 using Microsoft.Extensions.Options;
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Text;
-using System.Text.Json.Serialization;
+using DhanAlgoTrading.Models.DhanApi;
 
 namespace DhanAlgoTrading.Services
 {

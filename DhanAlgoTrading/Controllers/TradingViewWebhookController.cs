@@ -230,7 +230,7 @@ namespace DhanAlgoTrading.Controllers
                         Quantity = orderRequest.Quantity,
                         ProductType = orderRequest.ProductType,
                         SecurityId = orderRequest.SecurityId,
-                        Price = orderRequest.Price,
+                        Price = (decimal)orderRequest.Price,
                         TriggerPrice = orderRequest.TriggerPrice
                     };
 

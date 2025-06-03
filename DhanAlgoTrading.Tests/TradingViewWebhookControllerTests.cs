@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DhanAlgoTrading.Controllers;
 using DhanAlgoTrading.Models.Configuration;
+using DhanAlgoTrading.Models.DhanApi;
 using DhanAlgoTrading.Models.TradingView;
 using DhanAlgoTrading.Services;
 using Microsoft.AspNetCore.Mvc;
