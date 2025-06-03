@@ -4,13 +4,12 @@ using System.Text.Json; // For JsonSerializer, JsonSerializerOptions
 using System.Text.Json.Serialization; // For JsonIgnoreCondition
 using DhanAlgoTrading.Models.Configuration;
 using DhanAlgoTrading.Models.DhanApi;
-using DhanAlgoTrading.Services;
 using System.Web;
 using System.Net;
 
 namespace DhanAlgoTrading.Api.Services
 {
-    public partial class DhanService : IDhanService
+    public partial class DhanService : DhanAlgoTrading.Services.IDhanService
     {
         private readonly HttpClient _httpClient;
         private readonly DhanApiSettings _apiSettings;
