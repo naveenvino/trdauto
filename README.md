@@ -40,6 +40,24 @@ dotnet restore
 dotnet build
 ```
 
+## Configuration
+
+The API reads sensitive Dhan credentials from environment variables or user secrets. Set these keys before running:
+
+| Environment Variable | Purpose |
+|----------------------|---------|
+| `DHAN_ACCESS_TOKEN`  | Access token for authenticated API calls |
+| `DHAN_CLIENT_ID`     | Your Dhan client identifier |
+| `TRADINGVIEW_WEBHOOK_PASSPHRASE` | Passphrase expected by the webhook endpoint |
+
+When using user secrets:
+
+```bash
+dotnet user-secrets set DHAN_ACCESS_TOKEN "<token>"
+dotnet user-secrets set DHAN_CLIENT_ID "<client id>"
+dotnet user-secrets set TRADINGVIEW_WEBHOOK_PASSPHRASE "<passphrase>"
+```
+
 ## Run the API
 
 Start the web API from the project directory:

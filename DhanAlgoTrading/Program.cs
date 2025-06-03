@@ -8,6 +8,17 @@ using Polly;
 using Polly.Extensions.Http;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.ConfigureAppConfiguration((context, config) =>
+{
+    if (context.HostingEnvironment.IsDevelopment())
+    {
+        // Allow secrets to be stored outside of source control
+        config.AddUserSecrets<Program>(optional: true);
+    }
+
+    config.AddEnvironmentVariables();
+});
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
@@ -27,8 +38,15 @@ builder.Services.AddCors(options =>
 
 // Add services to the container.
 
-// 1. Configure DhanApiSettings from appsettings.json
-builder.Services.Configure<DhanApiSettings>(builder.Configuration.GetSection("DhanApiSettings"));
+// 1. Configure DhanApiSettings from configuration with environment/user secret overrides
+var dhanSection = builder.Configuration.GetSection("DhanApiSettings");
+builder.Services.Configure<DhanApiSettings>(options =>
+{
+    dhanSection.Bind(options);
+    options.AccessToken = builder.Configuration["DHAN_ACCESS_TOKEN"] ?? options.AccessToken;
+    options.ClientId = builder.Configuration["DHAN_CLIENT_ID"] ?? options.ClientId;
+    options.TradingViewWebhookPassphrase = builder.Configuration["TRADINGVIEW_WEBHOOK_PASSPHRASE"] ?? options.TradingViewWebhookPassphrase;
+});
 
 // 2. Register HttpClient for IDhanService, implemented by DhanService
 // This makes HttpClient available via constructor injection in DhanService.
