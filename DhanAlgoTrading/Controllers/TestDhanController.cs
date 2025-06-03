@@ -24,11 +24,13 @@ namespace DhanAlgoTrading.Api.Controllers
         {
             _logger.LogInformation("TestDhanController: GetUserProfile endpoint called.");
             var profileData = await _dhanService.GetUserProfileAsync();
-            if (profileData.StartsWith("Error:") || profileData.StartsWith("HTTP Error:") || profileData.StartsWith("Unexpected Error:"))
+
+            if (profileData == null)
             {
-                return StatusCode(500, profileData);
+                return StatusCode(500, "Failed to retrieve profile data.");
             }
-            return Content(profileData, "application/json");
+
+            return Ok(profileData);
         }
 
         [HttpPost("expiries")]
