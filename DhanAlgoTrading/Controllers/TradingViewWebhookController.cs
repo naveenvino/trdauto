@@ -1,4 +1,6 @@
-﻿using DhanAlgoTrading.Models.Configuration;
+using System;
+using System.Globalization;
+using DhanAlgoTrading.Models.Configuration;
 using DhanAlgoTrading.Models.DhanApi;
 using DhanAlgoTrading.Models.TradingView;
 using DhanAlgoTrading.Services;
@@ -64,18 +66,38 @@ namespace DhanAlgoTrading.Controllers
                         return BadRequest($"No expiry dates found for underlying {alert.UnderlyingScrip}.");
                     }
 
-                    // b. Select Target Expiry (Simplified: current weekly if offset is 0)
-                    // TODO: Implement proper expiry selection logic based on alert.ExpiryType and offsets
+                    // b. Select target expiry based on ExpiryType and offsets
                     string targetExpiry;
-                    if ("WEEKLY".Equals(alert.ExpiryType, StringComparison.OrdinalIgnoreCase) && alert.ExpiryOffsetWeeks == 0 && expiryDates.Count > 0)
+                    try
                     {
-                        targetExpiry = expiryDates.First();
+                        var orderedDates = expiryDates
+                            .Select(d => DateTime.Parse(d, CultureInfo.InvariantCulture))
+                            .OrderBy(d => d)
+                            .ToList();
+
+                        if (string.Equals(alert.ExpiryType, "WEEKLY", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var idx = Math.Clamp(alert.ExpiryOffsetWeeks, 0, orderedDates.Count - 1);
+                            targetExpiry = orderedDates[idx].ToString("yyyy-MM-dd");
+                        }
+                        else if (string.Equals(alert.ExpiryType, "MONTHLY", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var monthlyGroups = orderedDates
+                                .GroupBy(d => new { d.Year, d.Month })
+                                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                                .ToList();
+                            var idx = Math.Clamp(alert.ExpiryOffsetMonths, 0, monthlyGroups.Count - 1);
+                            targetExpiry = monthlyGroups[idx].First().ToString("yyyy-MM-dd");
+                        }
+                        else
+                        {
+                            targetExpiry = orderedDates.First().ToString("yyyy-MM-dd");
+                        }
                     }
-                    else
+                    catch (FormatException ex)
                     {
-                        _logger.LogWarning("Expiry selection logic not fully implemented for type: {ExpiryType}, offset: {OffsetWeeks}/{OffsetMonths}. Using first available.",
-                                           alert.ExpiryType, alert.ExpiryOffsetWeeks, alert.ExpiryOffsetMonths);
-                        targetExpiry = expiryDates.First();
+                        _logger.LogError(ex, "Failed to parse expiry dates returned from API: {Dates}", string.Join(',', expiryDates));
+                        return StatusCode(StatusCodes.Status500InternalServerError, "Invalid expiry date format from API.");
                     }
                     _logger.LogInformation("Selected target expiry: {TargetExpiry}", targetExpiry);
 
@@ -194,15 +216,30 @@ namespace DhanAlgoTrading.Controllers
                     }
 
 
-                    // f. Pre-trade Fund/Margin Check (Simplified)
+                    // f. Pre-trade Fund/Margin Check
                     var fundLimits = await _dhanService.GetFundLimitsAsync();
-                    // Corrected property name based on DTO: fundLimits.AvailableBalance
-                    if (fundLimits == null || fundLimits.AvailabelBalance <= 0)
+                    if (fundLimits == null)
                     {
-                        _logger.LogWarning("Insufficient funds or unable to fetch fund limits.");
-                        // return BadRequest("Fund check failed."); 
+                        _logger.LogWarning("Unable to fetch fund limits for margin check.");
                     }
-                    // TODO: Implement a more detailed margin check using _dhanService.GetOrderMarginsAsync(marginRequestDto)
+
+                    var marginRequestDto = new MarginCalculatorRequestDto
+                    {
+                        ExchangeSegment = orderRequest.ExchangeSegment,
+                        TransactionType = orderRequest.TransactionType,
+                        Quantity = orderRequest.Quantity,
+                        ProductType = orderRequest.ProductType,
+                        SecurityId = orderRequest.SecurityId,
+                        Price = orderRequest.Price,
+                        TriggerPrice = orderRequest.TriggerPrice
+                    };
+
+                    var marginResponse = await _dhanService.GetOrderMarginsAsync(marginRequestDto);
+                    if (marginResponse != null && fundLimits != null && marginResponse.TotalMargin > fundLimits.AvailabelBalance)
+                    {
+                        _logger.LogWarning("Insufficient margin. Required: {Required}, Available: {Available}", marginResponse.TotalMargin, fundLimits.AvailabelBalance);
+                        return BadRequest("Insufficient margin for order.");
+                    }
 
                     // g. Place Order
                     _logger.LogInformation("Placing order: {@OrderRequest}", orderRequest);

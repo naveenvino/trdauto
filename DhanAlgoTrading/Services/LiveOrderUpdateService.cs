@@ -1,4 +1,4 @@
-﻿using DhanAlgoTrading.Api.Models.DhanApi.WebSocket;
+using DhanAlgoTrading.Api.Models.DhanApi.WebSocket;
 using DhanAlgoTrading.Models.Configuration;
 using Microsoft.Extensions.Options;
 using System.Net.WebSockets;
@@ -141,7 +141,7 @@ namespace DhanAlgoTrading.Services
 
             while (_clientWebSocket?.State == WebSocketState.Open && !stoppingToken.IsCancellationRequested)
             {
-                WebSocketReceiveResult result =null;
+                WebSocketReceiveResult result = null;
                 using (var memoryStream = new System.IO.MemoryStream())
                 {
                     do
