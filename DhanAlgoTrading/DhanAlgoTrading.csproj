@@ -10,5 +10,9 @@
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.5" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo(&quot;DhanAlgoTrading.Tests&quot;)" />
+  </ItemGroup>
  
 </Project>
