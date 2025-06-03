@@ -28,6 +28,23 @@ namespace DhanAlgoTrading.Tests
             }
         }
 
+        private class CapturingHandler : HttpMessageHandler
+        {
+            private readonly HttpResponseMessage _response;
+            public HttpRequestMessage? CapturedRequest { get; private set; }
+
+            public CapturingHandler(HttpResponseMessage response)
+            {
+                _response = response;
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                CapturedRequest = request;
+                return Task.FromResult(_response);
+            }
+        }
+
         [Fact]
         public async Task GetExpiryDatesAsync_ReturnsList()
         {
@@ -47,6 +64,27 @@ namespace DhanAlgoTrading.Tests
             var result = await service.GetExpiryDatesAsync(new ExpiryListRequestDto());
 
             Assert.Contains("2024-06-01", result);
+        }
+
+        [Fact]
+        public async Task GetUserProfileAsync_UsesBaseAddress()
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}")
+            };
+
+            var handler = new CapturingHandler(response);
+            var httpClient = new HttpClient(handler)
+            {
+                BaseAddress = new Uri("https://api.test/")
+            };
+            var settings = Options.Create(new DhanApiSettings { BaseUrl = "https://api.test/", ClientId = "cid", AccessToken = "token" });
+            var service = new DhanService(httpClient, settings, NullLogger<DhanService>.Instance);
+
+            await service.GetUserProfileAsync();
+
+            Assert.Equal("https://api.test/user/status", handler.CapturedRequest?.RequestUri?.ToString());
         }
     }
 }

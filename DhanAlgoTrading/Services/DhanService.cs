@@ -62,7 +62,8 @@ namespace DhanAlgoTrading.Api.Services
             // **ASSUMPTION**: Endpoint for User Profile Status. Replace with actual endpoint if known.
             // The PDF mentions a "User Profile API" [cite: 266] but doesn't specify the exact GET endpoint.
             // This is a hypothetical endpoint.
-            var requestUri = $"{_apiSettings.BaseUrl}user/status"; // OR WHATEVER THE ACTUAL ENDPOINT IS
+            // Build the request relative to the configured BaseAddress
+            var requestUri = "/user/status"; // OR WHATEVER THE ACTUAL ENDPOINT IS
 
             try
             {
