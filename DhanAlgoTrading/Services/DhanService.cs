@@ -132,20 +132,134 @@ namespace DhanAlgoTrading.Api.Services
             }
         }
 
-        // Placeholder for GetExpiryDatesAsync - implement as per consolidated document
         public async Task<IEnumerable<string>> GetExpiryDatesAsync(ExpiryListRequestDto expiryRequest)
         {
-            _logger.LogInformation("GetExpiryDatesAsync called (placeholder in Part 3 extract).");
-            await Task.CompletedTask;
-            return Enumerable.Empty<string>();
+            if (expiryRequest == null)
+            {
+                _logger.LogWarning("ExpiryListRequestDto cannot be null for GetExpiryDatesAsync.");
+                return Enumerable.Empty<string>();
+            }
+
+            var requestUri = "/v2/optionchain/expirylist";
+            _logger.LogInformation("Fetching expiry dates via POST to URI: {RequestUri} with Request: {@ExpiryRequest}", requestUri, expiryRequest);
+
+            try
+            {
+                var requestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri)
+                {
+                    Content = JsonContent.Create(expiryRequest, options: _jsonSerializerOptions)
+                };
+
+                if (!string.IsNullOrWhiteSpace(_apiSettings.ClientId) && _apiSettings.ClientId != "YOUR_DHAN_CLIENT_ID_HERE")
+                {
+                    requestMessage.Headers.TryAddWithoutValidation("client-id", _apiSettings.ClientId);
+                }
+                else
+                {
+                    _logger.LogWarning("ClientId header not added for GetExpiryDatesAsync as it's not configured or is a placeholder.");
+                }
+
+                var httpResponse = await _httpClient.SendAsync(requestMessage);
+                var responseContentString = await httpResponse.Content.ReadAsStringAsync();
+
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    var expiryResponse = JsonSerializer.Deserialize<DhanExpiryDatesResponseDto>(responseContentString, _jsonSerializerOptions);
+                    if (expiryResponse?.Data != null)
+                    {
+                        _logger.LogInformation("Received {Count} expiry dates.", expiryResponse.Data.Count);
+                        return expiryResponse.Data;
+                    }
+
+                    _logger.LogWarning("API call returned success but response body was null or invalid. Body: {ResponseBody}", responseContentString);
+                    return Enumerable.Empty<string>();
+                }
+                else
+                {
+                    _logger.LogError("HTTP error {StatusCode} while fetching expiry dates. Response: {ErrorContent}", httpResponse.StatusCode, responseContentString);
+                    return Enumerable.Empty<string>();
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                _logger.LogError(httpEx, "HTTP request exception while fetching expiry dates.");
+                return Enumerable.Empty<string>();
+            }
+            catch (JsonException jsonEx)
+            {
+                _logger.LogError(jsonEx, "JSON deserialization error while fetching expiry dates.");
+                return Enumerable.Empty<string>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred while fetching expiry dates.");
+                return Enumerable.Empty<string>();
+            }
         }
 
-        // Placeholder for GetOptionChainAsync - implement as per consolidated document
         public async Task<IEnumerable<OptionInstrument>> GetOptionChainAsync(OptionChainRequestDto optionChainRequest)
         {
-            _logger.LogInformation("GetOptionChainAsync called (placeholder in Part 3 extract).");
-            await Task.CompletedTask;
-            return Enumerable.Empty<OptionInstrument>();
+            if (optionChainRequest == null)
+            {
+                _logger.LogWarning("OptionChainRequestDto cannot be null for GetOptionChainAsync.");
+                return Enumerable.Empty<OptionInstrument>();
+            }
+
+            var requestUri = "/v2/optionchain";
+            _logger.LogInformation("Fetching option chain via POST to URI: {RequestUri} with Request: {@OptionChainRequest}", requestUri, optionChainRequest);
+
+            try
+            {
+                var requestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri)
+                {
+                    Content = JsonContent.Create(optionChainRequest, options: _jsonSerializerOptions)
+                };
+
+                if (!string.IsNullOrWhiteSpace(_apiSettings.ClientId) && _apiSettings.ClientId != "YOUR_DHAN_CLIENT_ID_HERE")
+                {
+                    requestMessage.Headers.TryAddWithoutValidation("client-id", _apiSettings.ClientId);
+                }
+                else
+                {
+                    _logger.LogWarning("ClientId header not added for GetOptionChainAsync as it's not configured or is a placeholder.");
+                }
+
+                var httpResponse = await _httpClient.SendAsync(requestMessage);
+                var responseContentString = await httpResponse.Content.ReadAsStringAsync();
+
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    var instruments = JsonSerializer.Deserialize<List<OptionInstrument>>(responseContentString, _jsonSerializerOptions);
+                    if (instruments != null)
+                    {
+                        _logger.LogInformation("Received {Count} option instruments.", instruments.Count);
+                        return instruments;
+                    }
+
+                    _logger.LogWarning("Option chain API call returned success but response body was null or invalid. Body: {ResponseBody}", responseContentString);
+                    return Enumerable.Empty<OptionInstrument>();
+                }
+                else
+                {
+                    _logger.LogError("HTTP error {StatusCode} while fetching option chain. Response: {ErrorContent}", httpResponse.StatusCode, responseContentString);
+                    return Enumerable.Empty<OptionInstrument>();
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                _logger.LogError(httpEx, "HTTP request exception while fetching option chain.");
+                return Enumerable.Empty<OptionInstrument>();
+            }
+            catch (JsonException jsonEx)
+            {
+                _logger.LogError(jsonEx, "JSON deserialization error while fetching option chain.");
+                return Enumerable.Empty<OptionInstrument>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An unexpected error occurred while fetching option chain.");
+                return Enumerable.Empty<OptionInstrument>();
+            }
         }
 
         public async Task<OrderResponseDto?> PlaceOrderAsync(OrderRequestDto orderRequest)
