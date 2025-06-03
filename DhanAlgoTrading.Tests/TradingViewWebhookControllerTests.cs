@@ -16,7 +16,7 @@ namespace DhanAlgoTrading.Tests
     {
         private class StubDhanService : IDhanService
         {
-            public Task<string?> GetUserProfileAsync() => Task.FromResult<string?>(null);
+            public Task<DhanUserProfileStatusDto?> GetUserProfileAsync() => Task.FromResult<DhanUserProfileStatusDto?>(null);
             public Task<IEnumerable<string>> GetExpiryDatesAsync(ExpiryListRequestDto expiryRequest) => Task.FromResult<IEnumerable<string>>(new List<string>());
             public Task<IEnumerable<OptionInstrument>> GetOptionChainAsync(OptionChainRequestDto optionChainRequest) => Task.FromResult<IEnumerable<OptionInstrument>>(new List<OptionInstrument>());
             public Task<OrderResponseDto?> PlaceOrderAsync(OrderRequestDto orderRequest) => Task.FromResult<OrderResponseDto?>(null);

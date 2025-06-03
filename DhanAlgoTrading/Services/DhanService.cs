@@ -53,8 +53,8 @@ namespace DhanAlgoTrading.Api.Services
             }
         }
 
-        // Placeholder for GetUserProfileAsync - implement as per consolidated document
-        public async Task<string?> GetUserProfileAsync()
+        // Retrieves the logged in user's profile information
+        public async Task<DhanUserProfileStatusDto?> GetUserProfileAsync()
         {
             _logger.LogInformation("GetUserProfileAsync called.");
 
@@ -97,17 +97,12 @@ namespace DhanAlgoTrading.Api.Services
                             // You could also return the JSON string directly: return responseContent;
                             // Or, ideally, change the method signature to return Task<DhanUserProfileStatusDto?>
                             // and handle the object in the calling code.
-                            string formattedProfile = $"Token Valid: {profileStatus.IsTokenValid}, " +
-                                                      $"Data API Subscribed: {profileStatus.IsDataApiSubscribed}, " +
-                                                      $"DDPI Status: {profileStatus.DdpiStatus}, " +
-                                                      $"MTF Enabled: {profileStatus.IsMtfEnabled}, " +
-                                                      $"Active Segments: {(profileStatus.ActiveSegments != null ? string.Join(", ", profileStatus.ActiveSegments) : "N/A")}";
-                            return formattedProfile;
+                            return profileStatus;
                         }
                         else
                         {
                             _logger.LogWarning("Failed to deserialize user profile status from response: {ResponseContent}", responseContent);
-                            return "Failed to parse user profile data.";
+                            return null;
                         }
                     }
                     else
@@ -116,24 +111,24 @@ namespace DhanAlgoTrading.Api.Services
                         _logger.LogError("Failed to get user profile status. Status Code: {StatusCode}, Reason: {ReasonPhrase}, Content: {ErrorContent}",
                             response.StatusCode, response.ReasonPhrase, errorContent);
                         // Refer to API error codes in the PDF [cite: 47, 49] if available for this endpoint.
-                        return $"Error fetching profile: {response.StatusCode} - {response.ReasonPhrase}";
+                        return null;
                     }
                 }
             }
             catch (HttpRequestException ex)
             {
                 _logger.LogError(ex, "HTTP request failed while getting user profile status");
-                return "Network error while fetching profile.";
+                return null;
             }
             catch (JsonException ex)
             {
                 _logger.LogError(ex, "JSON deserialization failed while processing user profile status");
-                return "Error parsing profile data from server.";
+                return null;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An unexpected error occurred while getting user profile status");
-                return "An unexpected error occurred.";
+                return null;
             }
         }
 
