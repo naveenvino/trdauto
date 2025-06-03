@@ -1,0 +1,6 @@
+@DhanAlgoTrading_HostAddress = http://localhost:5018
+
+GET {{DhanAlgoTrading_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
