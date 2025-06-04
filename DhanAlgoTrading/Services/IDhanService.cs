@@ -49,7 +49,5 @@ namespace DhanAlgoTrading.Services
         Task<IEnumerable<HistoricalTradeDto>> GetHistoricalTradesAsync(string fromDate, string toDate, int page);
         Task<HistoricalChartResponseDto?> GetHistoricalChartAsync(HistoricalChartRequestDto request);
 
-
-
     }
 }
