@@ -203,5 +203,39 @@ namespace DhanAlgoTrading.Tests
 
             Assert.True(result);
         }
+
+        [Fact]
+        public async Task GetForeverOrdersAsync_ReturnsList()
+        {
+            var json = "[{\"orderId\":\"1\"}]";
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+            var httpClient = new HttpClient(new FakeHandler(response)) { BaseAddress = new Uri("https://api.test/") };
+            var settings = Options.Create(new DhanApiSettings { BaseUrl = "https://api.test/", ClientId = "cid", AccessToken = "token" });
+            var service = new DhanService(httpClient, settings, NullLogger<DhanService>.Instance);
+
+            var result = await service.GetForeverOrdersAsync();
+
+            Assert.Single(result);
+        }
+
+        [Fact]
+        public async Task GenerateEdisTpinAsync_ReturnsDto()
+        {
+            var json = "{\"tpin\":\"1234\"}";
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+            var httpClient = new HttpClient(new FakeHandler(response)) { BaseAddress = new Uri("https://api.test/") };
+            var settings = Options.Create(new DhanApiSettings { BaseUrl = "https://api.test/", ClientId = "cid", AccessToken = "token" });
+            var service = new DhanService(httpClient, settings, NullLogger<DhanService>.Instance);
+
+            var result = await service.GenerateEdisTpinAsync();
+
+            Assert.Equal("1234", result?.Tpin);
+        }
     }
 }
