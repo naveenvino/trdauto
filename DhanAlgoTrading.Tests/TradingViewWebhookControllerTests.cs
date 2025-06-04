@@ -51,7 +51,6 @@ namespace DhanAlgoTrading.Tests
             public Task<IEnumerable<LedgerEntryDto>> GetLedgerAsync() => Task.FromResult<IEnumerable<LedgerEntryDto>>(new List<LedgerEntryDto>());
             public Task<IEnumerable<HistoricalTradeDto>> GetHistoricalTradesAsync(string fromDate, string toDate, int page) => Task.FromResult<IEnumerable<HistoricalTradeDto>>(new List<HistoricalTradeDto>());
             public Task<HistoricalChartResponseDto?> GetHistoricalChartAsync(HistoricalChartRequestDto request) => Task.FromResult<HistoricalChartResponseDto?>(null);
-            public Task<IntradayChartResponseDto?> GetIntradayChartAsync(IntradayChartRequestDto request) => Task.FromResult<IntradayChartResponseDto?>(null);
         }
 
         [Fact]

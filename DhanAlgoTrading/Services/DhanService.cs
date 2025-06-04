@@ -1503,21 +1503,6 @@ namespace DhanAlgoTrading.Api.Services
             }
         }
 
-        public async Task<IntradayChartResponseDto?> GetIntradayChartAsync(IntradayChartRequestDto request)
-        {
-            if (request == null) return null;
-            var requestUri = "/v2/charts/intraday";
-            try
-            {
-                var resp = await _httpClient.PostAsJsonAsync(requestUri, request, _jsonSerializerOptions);
-                return await resp.Content.ReadFromJsonAsync<IntradayChartResponseDto>(_jsonSerializerOptions);
-            }
-            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
-            {
-                _logger.LogError(ex, "Error fetching intraday chart");
-                return null;
-            }
-        }
     }
 
 }

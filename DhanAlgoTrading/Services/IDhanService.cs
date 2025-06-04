@@ -48,9 +48,6 @@ namespace DhanAlgoTrading.Services
         Task<IEnumerable<LedgerEntryDto>> GetLedgerAsync();
         Task<IEnumerable<HistoricalTradeDto>> GetHistoricalTradesAsync(string fromDate, string toDate, int page);
         Task<HistoricalChartResponseDto?> GetHistoricalChartAsync(HistoricalChartRequestDto request);
-        Task<IntradayChartResponseDto?> GetIntradayChartAsync(IntradayChartRequestDto request);
-
-
 
     }
 }
