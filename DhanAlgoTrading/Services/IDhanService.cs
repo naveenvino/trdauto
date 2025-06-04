@@ -27,6 +27,13 @@ namespace DhanAlgoTrading.Services
         Task<IEnumerable<DhanInstrumentDto>> GetInstrumentsBySegmentAsync(string exchangeSegment);
         Task<IEnumerable<OrderResponseDto>?> PlaceSliceOrderAsync(OrderRequestDto sliceOrderRequest);
 
+        // Newly added methods from remaining API endpoints
+        Task<IEnumerable<DhanHoldingDto>> GetHoldingsAsync();
+        Task<bool> CancelOrderAsync(string orderId);
+        Task<OrderResponseDto?> ModifyOrderAsync(string orderId, ModifyOrderRequestDto modifyRequest);
+        Task<OrderDataDto?> GetOrderByCorrelationIdAsync(string correlationId);
+        Task<bool> ConvertPositionAsync(ConvertPositionRequestDto convertRequest);
+
 
 
     }
