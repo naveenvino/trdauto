@@ -34,6 +34,22 @@ namespace DhanAlgoTrading.Services
         Task<OrderDataDto?> GetOrderByCorrelationIdAsync(string correlationId);
         Task<bool> ConvertPositionAsync(ConvertPositionRequestDto convertRequest);
 
+        // Missing APIs implemented now
+        Task<IEnumerable<ForeverOrderDto>> GetForeverOrdersAsync();
+        Task<OrderResponseDto?> PlaceForeverOrderAsync(ForeverOrderRequestDto request);
+        Task<bool> CancelForeverOrderAsync(string orderId);
+
+        Task<EdisTpinResponseDto?> GenerateEdisTpinAsync();
+        Task<bool> SubmitEdisFormAsync(EdisFormRequestDto form);
+        Task<EdisInquireResponseDto?> InquireEdisAsync(string isin);
+
+        Task<KillSwitchResponseDto?> SetKillSwitchAsync(string status);
+
+        Task<IEnumerable<LedgerEntryDto>> GetLedgerAsync();
+        Task<IEnumerable<HistoricalTradeDto>> GetHistoricalTradesAsync(string fromDate, string toDate, int page);
+        Task<HistoricalChartResponseDto?> GetHistoricalChartAsync(HistoricalChartRequestDto request);
+        Task<IntradayChartResponseDto?> GetIntradayChartAsync(IntradayChartRequestDto request);
+
 
 
     }

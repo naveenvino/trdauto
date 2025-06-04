@@ -54,6 +54,7 @@ builder.Services.Configure<DhanApiSettings>(options =>
 builder.Services.AddHttpClient<IDhanService, DhanService>()
     .AddPolicyHandler(GetRetryPolicy()); // Add Polly retry policy
 builder.Services.AddHostedService<LiveOrderUpdateService>();
+builder.Services.AddHostedService<LiveMarketFeedService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

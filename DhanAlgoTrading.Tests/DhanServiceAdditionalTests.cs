@@ -203,5 +203,57 @@ namespace DhanAlgoTrading.Tests
 
             Assert.True(result);
         }
+
+        [Fact]
+        public async Task GetForeverOrdersAsync_ReturnsList()
+        {
+            var json = "[{\"orderId\":\"1\"}]";
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+            var httpClient = new HttpClient(new FakeHandler(response)) { BaseAddress = new Uri("https://api.test/") };
+            var settings = Options.Create(new DhanApiSettings { BaseUrl = "https://api.test/", ClientId = "cid", AccessToken = "token" });
+            var service = new DhanService(httpClient, settings, NullLogger<DhanService>.Instance);
+
+            var result = await service.GetForeverOrdersAsync();
+
+            Assert.Single(result);
+        }
+
+        [Fact]
+        public async Task GenerateEdisTpinAsync_ReturnsDto()
+        {
+            var json = "{\"tpin\":\"1234\"}";
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+            var httpClient = new HttpClient(new FakeHandler(response)) { BaseAddress = new Uri("https://api.test/") };
+            var settings = Options.Create(new DhanApiSettings { BaseUrl = "https://api.test/", ClientId = "cid", AccessToken = "token" });
+            var service = new DhanService(httpClient, settings, NullLogger<DhanService>.Instance);
+
+            var result = await service.GenerateEdisTpinAsync();
+
+            Assert.Equal("1234", result?.Tpin);
+        }
+
+        [Fact]
+        public async Task GetIntradayChartAsync_ReturnsData()
+        {
+            var json = "{\"candles\":[{\"time\":\"1\",\"open\":1,\"high\":2,\"low\":0.5,\"close\":1.5,\"volume\":10}]}";
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+            var httpClient = new HttpClient(new FakeHandler(response)) { BaseAddress = new Uri("https://api.test/") };
+            var settings = Options.Create(new DhanApiSettings { BaseUrl = "https://api.test/", ClientId = "cid", AccessToken = "token" });
+            var service = new DhanService(httpClient, settings, NullLogger<DhanService>.Instance);
+
+            var req = new IntradayChartRequestDto { SecurityId = "1" };
+            var result = await service.GetIntradayChartAsync(req);
+
+            Assert.Single(result?.Candles!);
+        }
     }
 }
