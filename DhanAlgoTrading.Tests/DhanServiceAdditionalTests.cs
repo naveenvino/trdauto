@@ -172,5 +172,36 @@ namespace DhanAlgoTrading.Tests
 
             Assert.Null(result);
         }
+
+        [Fact]
+        public async Task GetHoldingsAsync_ReturnsList()
+        {
+            var json = "[{}]";
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+            var httpClient = new HttpClient(new FakeHandler(response)) { BaseAddress = new Uri("https://api.test/") };
+            var settings = Options.Create(new DhanApiSettings { BaseUrl = "https://api.test/", ClientId = "cid", AccessToken = "token" });
+            var service = new DhanService(httpClient, settings, NullLogger<DhanService>.Instance);
+
+            var result = await service.GetHoldingsAsync();
+
+            Assert.Single(result);
+        }
+
+        [Fact]
+        public async Task ConvertPositionAsync_ReturnsTrueOnSuccess()
+        {
+            var response = new HttpResponseMessage(HttpStatusCode.Accepted);
+            var httpClient = new HttpClient(new FakeHandler(response)) { BaseAddress = new Uri("https://api.test/") };
+            var settings = Options.Create(new DhanApiSettings { BaseUrl = "https://api.test/", ClientId = "cid", AccessToken = "token" });
+            var service = new DhanService(httpClient, settings, NullLogger<DhanService>.Instance);
+
+            var req = new ConvertPositionRequestDto { FromProductType = "INTRADAY", ToProductType = "CNC" };
+            var result = await service.ConvertPositionAsync(req);
+
+            Assert.True(result);
+        }
     }
 }

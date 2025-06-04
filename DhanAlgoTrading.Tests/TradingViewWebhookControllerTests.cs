@@ -36,6 +36,11 @@ namespace DhanAlgoTrading.Tests
             public Task<MarketFullQuoteResponseDto?> GetFullMarketQuoteAsync(MarketDataRequestDto request) => Task.FromResult<MarketFullQuoteResponseDto?>(null);
             public Task<IEnumerable<DhanInstrumentDto>> GetInstrumentsBySegmentAsync(string exchangeSegment) => Task.FromResult<IEnumerable<DhanInstrumentDto>>(new List<DhanInstrumentDto>());
             public Task<IEnumerable<OrderResponseDto>?> PlaceSliceOrderAsync(OrderRequestDto sliceOrderRequest) => Task.FromResult<IEnumerable<OrderResponseDto>?>(null);
+            public Task<IEnumerable<DhanHoldingDto>> GetHoldingsAsync() => Task.FromResult<IEnumerable<DhanHoldingDto>>(new List<DhanHoldingDto>());
+            public Task<bool> CancelOrderAsync(string orderId) => Task.FromResult(false);
+            public Task<OrderResponseDto?> ModifyOrderAsync(string orderId, ModifyOrderRequestDto modifyRequest) => Task.FromResult<OrderResponseDto?>(null);
+            public Task<OrderDataDto?> GetOrderByCorrelationIdAsync(string correlationId) => Task.FromResult<OrderDataDto?>(null);
+            public Task<bool> ConvertPositionAsync(ConvertPositionRequestDto convertRequest) => Task.FromResult(false);
         }
 
         [Fact]

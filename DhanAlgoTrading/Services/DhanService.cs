@@ -2,6 +2,7 @@
 using System.Net.Http.Headers; // For MediaTypeWithQualityHeaderValue
 using System.Text.Json; // For JsonSerializer, JsonSerializerOptions
 using System.Text.Json.Serialization; // For JsonIgnoreCondition
+using System.Net.Http.Json;
 using DhanAlgoTrading.Models.Configuration;
 using DhanAlgoTrading.Models.DhanApi;
 using System.Web;
@@ -1209,6 +1210,137 @@ namespace DhanAlgoTrading.Api.Services
             {
                 _logger.LogError(ex, "An unexpected error occurred while placing slice order.");
                 return new List<OrderResponseDto> { new OrderResponseDto { CustomStatus = "UnexpectedError", CustomMessage = ex.Message } };
+            }
+        }
+
+        // ------- Additional API methods -------
+
+        public async Task<IEnumerable<DhanHoldingDto>> GetHoldingsAsync()
+        {
+            var requestUri = "/v2/holdings";
+            _logger.LogInformation("Fetching holdings from URI: {RequestUri}", requestUri);
+            try
+            {
+                var holdings = await _httpClient.GetFromJsonAsync<List<DhanHoldingDto>>(requestUri, _jsonSerializerOptions);
+                return holdings ?? Enumerable.Empty<DhanHoldingDto>();
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                _logger.LogError(ex, "Error fetching holdings from {RequestUri}", requestUri);
+                return Enumerable.Empty<DhanHoldingDto>();
+            }
+        }
+
+        public async Task<bool> CancelOrderAsync(string orderId)
+        {
+            if (string.IsNullOrWhiteSpace(orderId))
+            {
+                _logger.LogWarning("CancelOrderAsync called with empty orderId");
+                return false;
+            }
+
+            var requestUri = $"/v2/orders/{orderId}";
+            _logger.LogInformation("Cancelling order via DELETE to URI: {RequestUri}", requestUri);
+            try
+            {
+                var response = await _httpClient.DeleteAsync(requestUri);
+                return response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.Accepted;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP error while cancelling order {OrderId}", orderId);
+                return false;
+            }
+        }
+
+        public async Task<OrderResponseDto?> ModifyOrderAsync(string orderId, ModifyOrderRequestDto modifyRequest)
+        {
+            if (string.IsNullOrWhiteSpace(orderId) || modifyRequest == null)
+            {
+                _logger.LogWarning("ModifyOrderAsync invalid parameters");
+                return null;
+            }
+
+            if (string.IsNullOrWhiteSpace(_apiSettings.ClientId) || _apiSettings.ClientId == "YOUR_DHAN_CLIENT_ID_HERE")
+            {
+                _logger.LogError("Dhan ClientId not configured. Cannot modify order");
+                return null;
+            }
+
+            modifyRequest.DhanClientId = _apiSettings.ClientId;
+            modifyRequest.OrderId = orderId;
+
+            var requestUri = $"/v2/orders/{orderId}";
+            _logger.LogInformation("Modifying order via PUT to URI: {RequestUri}", requestUri);
+            try
+            {
+                var httpResponse = await _httpClient.PutAsJsonAsync(requestUri, modifyRequest, _jsonSerializerOptions);
+                var content = await httpResponse.Content.ReadAsStringAsync();
+
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    var resp = JsonSerializer.Deserialize<OrderResponseDto>(content, _jsonSerializerOptions);
+                    if (resp != null) resp.CustomStatus = "ApiSuccess";
+                    return resp;
+                }
+
+                _logger.LogError("HTTP error {StatusCode} while modifying order. Response: {Content}", httpResponse.StatusCode, content);
+                return null;
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                _logger.LogError(ex, "Error modifying order {OrderId}", orderId);
+                return null;
+            }
+        }
+
+        public async Task<OrderDataDto?> GetOrderByCorrelationIdAsync(string correlationId)
+        {
+            if (string.IsNullOrWhiteSpace(correlationId))
+            {
+                _logger.LogWarning("GetOrderByCorrelationIdAsync called with empty id");
+                return null;
+            }
+
+            var requestUri = $"/v2/orders/external/{WebUtility.UrlEncode(correlationId)}";
+            _logger.LogInformation("Fetching order by correlation id from URI: {RequestUri}", requestUri);
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<OrderDataDto>(requestUri, _jsonSerializerOptions);
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                _logger.LogError(ex, "Error fetching order by correlation id {CorrelationId}", correlationId);
+                return null;
+            }
+        }
+
+        public async Task<bool> ConvertPositionAsync(ConvertPositionRequestDto convertRequest)
+        {
+            if (convertRequest == null)
+            {
+                _logger.LogWarning("ConvertPositionAsync called with null request");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(_apiSettings.ClientId) || _apiSettings.ClientId == "YOUR_DHAN_CLIENT_ID_HERE")
+            {
+                _logger.LogError("Dhan ClientId not configured. Cannot convert position");
+                return false;
+            }
+            convertRequest.DhanClientId = _apiSettings.ClientId;
+
+            var requestUri = "/v2/positions/convert";
+            _logger.LogInformation("Converting position via POST to URI: {RequestUri}", requestUri);
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(requestUri, convertRequest, _jsonSerializerOptions);
+                return response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.Accepted;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP error during ConvertPositionAsync");
+                return false;
             }
         }
     }
