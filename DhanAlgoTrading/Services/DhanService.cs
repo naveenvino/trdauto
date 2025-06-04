@@ -54,7 +54,7 @@ namespace DhanAlgoTrading.Api.Services
         }
 
         // Retrieves the logged in user's profile information
-        public async Task<DhanUserProfileStatusDto?> GetUserProfileAsync()
+        public async Task<DhanUserProfileDto?> GetUserProfileAsync()
         {
             _logger.LogInformation("GetUserProfileAsync called.");
 
@@ -89,13 +89,13 @@ namespace DhanAlgoTrading.Api.Services
 
                         // Deserialize to our DTO
                         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                        DhanUserProfileStatusDto? profileStatus = JsonSerializer.Deserialize<DhanUserProfileStatusDto>(responseContent, options);
+                        DhanUserProfileDto? profileStatus = JsonSerializer.Deserialize<DhanUserProfileDto>(responseContent, options);
 
                         if (profileStatus != null)
                         {
                             // Format the DTO into a string to match your method's return signature.
                             // You could also return the JSON string directly: return responseContent;
-                            // Or, ideally, change the method signature to return Task<DhanUserProfileStatusDto?>
+                            // Or, ideally, change the method signature to return Task<DhanUserProfileDto?>
                             // and handle the object in the calling code.
                             return profileStatus;
                         }

@@ -4,7 +4,7 @@ namespace DhanAlgoTrading.Services
 {
     public interface IDhanService
     {
-        Task<DhanUserProfileStatusDto?> GetUserProfileAsync(); // From Part 1
+        Task<DhanUserProfileDto?> GetUserProfileAsync();
         Task<IEnumerable<string>> GetExpiryDatesAsync(ExpiryListRequestDto expiryRequest); // From Part 2
         Task<IEnumerable<OptionInstrument>> GetOptionChainAsync(OptionChainRequestDto optionChainRequest); // From Part 2
         Task<OrderResponseDto?> PlaceOrderAsync(OrderRequestDto orderRequest); // Method for Part 3
