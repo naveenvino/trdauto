@@ -41,6 +41,16 @@ namespace DhanAlgoTrading.Tests
             public Task<OrderResponseDto?> ModifyOrderAsync(string orderId, ModifyOrderRequestDto modifyRequest) => Task.FromResult<OrderResponseDto?>(null);
             public Task<OrderDataDto?> GetOrderByCorrelationIdAsync(string correlationId) => Task.FromResult<OrderDataDto?>(null);
             public Task<bool> ConvertPositionAsync(ConvertPositionRequestDto convertRequest) => Task.FromResult(false);
+            public Task<IEnumerable<ForeverOrderDto>> GetForeverOrdersAsync() => Task.FromResult<IEnumerable<ForeverOrderDto>>(new List<ForeverOrderDto>());
+            public Task<OrderResponseDto?> PlaceForeverOrderAsync(ForeverOrderRequestDto request) => Task.FromResult<OrderResponseDto?>(null);
+            public Task<bool> CancelForeverOrderAsync(string orderId) => Task.FromResult(false);
+            public Task<EdisTpinResponseDto?> GenerateEdisTpinAsync() => Task.FromResult<EdisTpinResponseDto?>(null);
+            public Task<bool> SubmitEdisFormAsync(EdisFormRequestDto form) => Task.FromResult(false);
+            public Task<EdisInquireResponseDto?> InquireEdisAsync(string isin) => Task.FromResult<EdisInquireResponseDto?>(null);
+            public Task<KillSwitchResponseDto?> SetKillSwitchAsync(string status) => Task.FromResult<KillSwitchResponseDto?>(null);
+            public Task<IEnumerable<LedgerEntryDto>> GetLedgerAsync() => Task.FromResult<IEnumerable<LedgerEntryDto>>(new List<LedgerEntryDto>());
+            public Task<IEnumerable<HistoricalTradeDto>> GetHistoricalTradesAsync(string fromDate, string toDate, int page) => Task.FromResult<IEnumerable<HistoricalTradeDto>>(new List<HistoricalTradeDto>());
+            public Task<HistoricalChartResponseDto?> GetHistoricalChartAsync(HistoricalChartRequestDto request) => Task.FromResult<HistoricalChartResponseDto?>(null);
         }
 
         [Fact]

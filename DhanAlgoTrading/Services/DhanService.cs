@@ -1343,6 +1343,165 @@ namespace DhanAlgoTrading.Api.Services
                 return false;
             }
         }
+
+        // ------------------- Newly Added APIs -------------------
+        public async Task<IEnumerable<ForeverOrderDto>> GetForeverOrdersAsync()
+        {
+            var requestUri = "/v2/forever/all";
+            try
+            {
+                var orders = await _httpClient.GetFromJsonAsync<List<ForeverOrderDto>>(requestUri, _jsonSerializerOptions);
+                return orders ?? new List<ForeverOrderDto>();
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                _logger.LogError(ex, "Error fetching forever orders");
+                return Enumerable.Empty<ForeverOrderDto>();
+            }
+        }
+
+        public async Task<OrderResponseDto?> PlaceForeverOrderAsync(ForeverOrderRequestDto request)
+        {
+            if (request == null)
+            {
+                _logger.LogWarning("PlaceForeverOrderAsync called with null request");
+                return null;
+            }
+            var requestUri = "/v2/forever";
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(requestUri, request, _jsonSerializerOptions);
+                return await response.Content.ReadFromJsonAsync<OrderResponseDto>(_jsonSerializerOptions);
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                _logger.LogError(ex, "Error placing forever order");
+                return null;
+            }
+        }
+
+        public async Task<bool> CancelForeverOrderAsync(string orderId)
+        {
+            if (string.IsNullOrWhiteSpace(orderId)) return false;
+            var requestUri = $"/v2/forever/{WebUtility.UrlEncode(orderId)}";
+            try
+            {
+                var resp = await _httpClient.DeleteAsync(requestUri);
+                return resp.IsSuccessStatusCode;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Error cancelling forever order {OrderId}", orderId);
+                return false;
+            }
+        }
+
+        public async Task<EdisTpinResponseDto?> GenerateEdisTpinAsync()
+        {
+            var requestUri = "/v2/edis/tpin";
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<EdisTpinResponseDto>(requestUri, _jsonSerializerOptions);
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                _logger.LogError(ex, "Error generating EDIS TPIN");
+                return null;
+            }
+        }
+
+        public async Task<bool> SubmitEdisFormAsync(EdisFormRequestDto form)
+        {
+            if (form == null) return false;
+            var requestUri = "/v2/edis/form";
+            try
+            {
+                var resp = await _httpClient.PostAsJsonAsync(requestUri, form, _jsonSerializerOptions);
+                return resp.IsSuccessStatusCode || resp.StatusCode == HttpStatusCode.Accepted;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Error submitting EDIS form");
+                return false;
+            }
+        }
+
+        public async Task<EdisInquireResponseDto?> InquireEdisAsync(string isin)
+        {
+            if (string.IsNullOrWhiteSpace(isin)) return null;
+            var requestUri = $"/v2/edis/inquire/{WebUtility.UrlEncode(isin)}";
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<EdisInquireResponseDto>(requestUri, _jsonSerializerOptions);
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                _logger.LogError(ex, "Error inquiring EDIS for {Isin}", isin);
+                return null;
+            }
+        }
+
+        public async Task<KillSwitchResponseDto?> SetKillSwitchAsync(string status)
+        {
+            if (string.IsNullOrWhiteSpace(status)) return null;
+            var requestUri = $"/v2/killswitch?killSwitchStatus={WebUtility.UrlEncode(status)}";
+            try
+            {
+                var resp = await _httpClient.PostAsync(requestUri, null);
+                return await resp.Content.ReadFromJsonAsync<KillSwitchResponseDto>(_jsonSerializerOptions);
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                _logger.LogError(ex, "Error setting kill switch status {Status}", status);
+                return null;
+            }
+        }
+
+        public async Task<IEnumerable<LedgerEntryDto>> GetLedgerAsync()
+        {
+            var requestUri = "/v2/ledger";
+            try
+            {
+                var ledger = await _httpClient.GetFromJsonAsync<List<LedgerEntryDto>>(requestUri, _jsonSerializerOptions);
+                return ledger ?? new List<LedgerEntryDto>();
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                _logger.LogError(ex, "Error fetching ledger");
+                return Enumerable.Empty<LedgerEntryDto>();
+            }
+        }
+
+        public async Task<IEnumerable<HistoricalTradeDto>> GetHistoricalTradesAsync(string fromDate, string toDate, int page)
+        {
+            var requestUri = $"/v2/trades/{fromDate}/{toDate}/{page}";
+            try
+            {
+                var trades = await _httpClient.GetFromJsonAsync<List<HistoricalTradeDto>>(requestUri, _jsonSerializerOptions);
+                return trades ?? new List<HistoricalTradeDto>();
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                _logger.LogError(ex, "Error fetching historical trades");
+                return Enumerable.Empty<HistoricalTradeDto>();
+            }
+        }
+
+        public async Task<HistoricalChartResponseDto?> GetHistoricalChartAsync(HistoricalChartRequestDto request)
+        {
+            if (request == null) return null;
+            var requestUri = "/v2/charts/historical";
+            try
+            {
+                var resp = await _httpClient.PostAsJsonAsync(requestUri, request, _jsonSerializerOptions);
+                return await resp.Content.ReadFromJsonAsync<HistoricalChartResponseDto>(_jsonSerializerOptions);
+            }
+            catch (Exception ex) when (ex is HttpRequestException || ex is JsonException)
+            {
+                _logger.LogError(ex, "Error fetching historical chart");
+                return null;
+            }
+        }
     }
 
 }
