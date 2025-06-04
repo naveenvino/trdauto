@@ -86,5 +86,27 @@ namespace DhanAlgoTrading.Tests
 
             Assert.Equal("https://api.test/profile", handler.CapturedRequest?.RequestUri?.ToString());
         }
+
+        [Fact]
+        public async Task GetUserProfileAsync_DeserializesDto()
+        {
+            var json = "{\"dhanClientId\":\"CID\",\"tokenValidity\":\"valid\",\"activeSegment\":\"NSE_EQ\",\"ddpi\":\"ACTIVE\",\"dataPlan\":\"BASIC\"}";
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json)
+            };
+
+            var httpClient = new HttpClient(new FakeHandler(response))
+            {
+                BaseAddress = new Uri("https://api.test/")
+            };
+            var settings = Options.Create(new DhanApiSettings { BaseUrl = "https://api.test/", ClientId = "cid", AccessToken = "token" });
+            var service = new DhanService(httpClient, settings, NullLogger<DhanService>.Instance);
+
+            var result = await service.GetUserProfileAsync();
+
+            Assert.Equal("CID", result?.DhanClientId);
+            Assert.Equal("BASIC", result?.DataPlan);
+        }
     }
 }
