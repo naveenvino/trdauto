@@ -451,9 +451,22 @@ namespace DhanAlgoTrading.Api.Services
 
             try
             {
-                // The /v2/positions endpoint often returns a wrapper object that contains a list of positions
-                // and potentially summary data. Adjust DTO 'PositionBookDto' accordingly.
-                var positionBook = await _httpClient.GetFromJsonAsync<PositionBookDto>(requestUri, _jsonSerializerOptions);
+                // Some environments return an array while others return a wrapper
+                // object. Retrieve the raw JSON and handle both cases.
+                var responseString = await _httpClient.GetStringAsync(requestUri);
+                _logger.LogDebug("Raw positions response: {Response}", responseString);
+
+                PositionBookDto? positionBook;
+                if (responseString.TrimStart().StartsWith("["))
+                {
+                    var positions = JsonSerializer.Deserialize<List<PositionDataDto>>(responseString, _jsonSerializerOptions);
+                    positionBook = new PositionBookDto { Positions = positions };
+                }
+                else
+                {
+                    positionBook = JsonSerializer.Deserialize<PositionBookDto>(responseString, _jsonSerializerOptions);
+                }
+
                 _logger.LogInformation("Successfully fetched positions.");
                 return positionBook;
             }
