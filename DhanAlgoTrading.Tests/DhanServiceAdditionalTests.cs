@@ -158,6 +158,28 @@ namespace DhanAlgoTrading.Tests
         }
 
         [Fact]
+        public async Task GetPositionsAsync_HandlesArrayResponse()
+        {
+            var json = "[{\"securityId\":\"1\",\"quantity\":1}]";
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+
+            var httpClient = new HttpClient(new FakeHandler(response))
+            {
+                BaseAddress = new Uri("https://api.test/")
+            };
+            var settings = Options.Create(new DhanApiSettings { BaseUrl = "https://api.test/", ClientId = "cid", AccessToken = "token" });
+            var service = new DhanService(httpClient, settings, NullLogger<DhanService>.Instance);
+
+            var result = await service.GetPositionsAsync();
+
+            Assert.NotNull(result);
+            Assert.Single(result?.Positions ?? new List<PositionDataDto>());
+        }
+
+        [Fact]
         public async Task GetPositionsAsync_ReturnsNullOnHttpError()
         {
             var response = new HttpResponseMessage(HttpStatusCode.InternalServerError);
